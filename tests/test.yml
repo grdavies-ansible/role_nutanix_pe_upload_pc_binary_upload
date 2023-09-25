@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  gather_facts: false
+  roles:
+    - role: ../..
+  vars:
+    nutanix_host: 10.38.11.199
+    nutanix_username: admin
+    nutanix_password: nx2Tech682!
+    # nutanix_debug: true
+    nutanix_pc_metadata_path: /Users/ross.davies/Documents/GitHub/grdavies-ansible/role_nutanix_pe_upload_pc_binary_upload/tests/files/generated-pc.2023.3-metadata.json
+    nutanix_pc_binary_path: /Users/ross.davies/Documents/GitHub/grdavies-ansible/role_nutanix_pe_upload_pc_binary_upload/tests/files/pc.2023.3.tar

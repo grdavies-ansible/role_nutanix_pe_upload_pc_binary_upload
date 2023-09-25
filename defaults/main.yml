@@ -1,0 +1,11 @@
+---
+# defaults file for role_nutanix_pe_upload_pc_binary_upload
+nutanix_host: ""
+nutanix_username: ""
+nutanix_password: ""
+nutanix_port: 9440
+validate_certs: false
+nutanix_debug: false
+nutanix_pc_binary_path: ""
+nutanix_pc_metadata_path: ""
+nutanix_pc_upload_timeout_mins: 60
