@@ -10,12 +10,12 @@
 
 - name: Debug nutanix_pc_metadata_path
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_metadata_path }}"
+    msg: "{{ nutanix_pc_metadata_path | default('') }}"
   when: nutanix_debug
 
 - name: Debug nutanix_pc_binary_path
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_binary_path }}"
+    msg: "{{ nutanix_pc_binary_path | default('') }}"
   when: nutanix_debug
 
 - name: Read PC metadata
