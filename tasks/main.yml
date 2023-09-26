@@ -42,9 +42,7 @@
 
 - name: Get available PC versions
   ansible.builtin.uri:
-    url:
-      "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/\
-      services/rest/v1/upgrade/prism_central_deploy/softwares"
+    url: "https://{{ role_nutanix_prism_api_url_base }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares"
     method: GET
     validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
     body_format: json
@@ -184,9 +182,7 @@
   block:
     - name: Validate PC Upload Metadata
       ansible.builtin.uri:
-        url:
-          "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/\
-          services/rest/v1/upgrade/prism_central_deploy/softwares/validate_upload"
+        url: "https://{{ role_nutanix_prism_api_url_base }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares/validate_upload"
         method: POST
         validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
         src: "{{ role_nutanix_pe_upload_pc_metadata_path }}"
@@ -219,12 +215,12 @@
     - name: Upload Prism Central image to Prism Element
       ansible.builtin.uri:
         url:
-          "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/\
-          softwares/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}/upload?\
-          fileSize={{ role_nutanix_pe_upload_pc_metadata_json.size }}&\
-          md5Sum={{ role_nutanix_pe_upload_pc_metadata_json.hex_md5 }}&\
-          fileName={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}&\
-          version={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}"
+          "https://{{ role_nutanix_prism_api_url_base }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy\
+          /softwares/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}/upload\
+          ?fileSize={{ role_nutanix_pe_upload_pc_metadata_json.size }}\
+          &md5Sum={{ role_nutanix_pe_upload_pc_metadata_json.hex_md5 }}\
+          &fileName={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}\
+          &version={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}"
         method: POST
         validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
         src: "{{ role_nutanix_pe_upload_pc_binary_path }}"
@@ -264,8 +260,8 @@
     - name: Remove Prism Central image from Prism Element
       ansible.builtin.uri:
         url:
-          "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/\
-          softwares/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}/"
+          "https://{{ role_nutanix_prism_api_url_base }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy\
+          /softwares/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}/"
         method: DELETE
         validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
         headers:
