@@ -1,4 +1,3 @@
 ---
-roles:
-  - name: grdavies.role_nutanix_prism_api
-    version: "1.1.0"
+- name: grdavies.role_nutanix_prism_api
+  version: "1.1.0"
