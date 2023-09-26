@@ -1,229 +1,301 @@
 ---
-# tasks file for role_nutanix_pe_upload_pc_binary_upload
+# tasks file for role_nutanix_pe_upload_pc
 - name: Setup connection to Nutanix API
-  ansible.builtin.include_tasks: setup_api.yml
+  ansible.builtin.include_role:
+    name: grdavies.role_nutanix_prism_api
+  vars:
+    role_nutanix_prism_api_host: "{{ role_nutanix_pe_upload_pc_host }}"
+    role_nutanix_prism_api_username: "{{ role_nutanix_pe_upload_pc_username }}"
+    role_nutanix_prism_api_password: "{{ role_nutanix_pe_upload_pc_password }}"
+    role_nutanix_prism_api_port: "{{ role_nutanix_pe_upload_pc_port }}"
+    role_nutanix_prism_api_validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+    role_nutanix_prism_api_debug: "{{ role_nutanix_pe_upload_pc_debug }}"
 
-- name: Debug nutanix_pc_upload_timeout
-  ansible.builtin.debug:
-    msg: "{{ nutanix_pc_upload_timeout_mins * 60 }}"
-  when: nutanix_debug
+- name: Set role_nutanix_pe_upload_pc_timeout_sec
+  ansible.builtin.set_fact:
+    role_nutanix_pe_upload_pc_timeout_sec: "{{ role_nutanix_pe_upload_pc_timeout_mins * 60 | int }}"
 
-- name: Debug nutanix_pc_metadata_path
+- name: Debug role_nutanix_pe_upload_pc_timeout_sec
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_metadata_path | default('') }}"
-  when: nutanix_debug
+    msg: "{{ role_nutanix_pe_upload_pc_timeout_sec }}"
+  when: role_nutanix_pe_upload_pc_debug
 
-- name: Debug nutanix_pc_binary_path
+- name: Debug role_nutanix_pe_upload_pc_metadata_path
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_binary_path | default('') }}"
-  when: nutanix_debug
+    msg: "{{ role_nutanix_pe_upload_pc_metadata_path | default('') }}"
+  when: role_nutanix_pe_upload_pc_debug
+
+- name: Debug role_nutanix_pe_upload_pc_binary_path
+  ansible.builtin.debug:
+    msg: "{{ role_nutanix_pe_upload_pc_binary_path | default('') }}"
+  when: role_nutanix_pe_upload_pc_debug
 
 - name: Read PC metadata
   ansible.builtin.include_vars:
-    file: "{{ nutanix_pc_metadata_path }}"
-    name: nutanix_pc_metadata
+    file: "{{ role_nutanix_pe_upload_pc_metadata_path }}"
+    name: role_nutanix_pe_upload_pc_metadata_json
 
-- name: Debug nutanix_pc_metadata
+- name: Debug role_nutanix_pe_upload_pc_metadata_json
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_metadata }}"
-  when: nutanix_debug
+    msg: "{{ role_nutanix_pe_upload_pc_metadata_json }}"
+  when: role_nutanix_pe_upload_pc_debug
 
 - name: Get available PC versions
   ansible.builtin.uri:
-    url: "https://{{ nutanix_host }}:{{ nutanix_port }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares"
+    url:
+      "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/\
+      services/rest/v1/upgrade/prism_central_deploy/softwares"
     method: GET
-    validate_certs: "{{ validate_certs }}"
+    validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
     body_format: json
     headers:
-      Authorization: "{{ nutanix_api_auth }}"
+      Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
     status_code: 200
     return_content: true
-  register: nutanix_pc_available_versions
+  register: role_nutanix_pe_upload_pc_available_pc_versions
   ignore_errors: false
 
-- name: Debug nutanix_pc_available_versions
+- name: Debug role_nutanix_pe_upload_pc_available_pc_versions
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_available_versions }}"
-  when: nutanix_debug
+    msg: "{{ role_nutanix_pe_upload_pc_available_pc_versions }}"
+  when: role_nutanix_pe_upload_pc_debug
 
-- name: Get PC version data for "{{ nutanix_pc_deploy_version }}"
+- name: "Get version metadata from Prism Central (if version already exists)"
   ansible.builtin.set_fact:
-    nutanix_pc_upload_version_data: '{{ nutanix_pc_available_versions.json | json_query(query) | join("") }}'
+    role_nutanix_pe_upload_pc_exists_metadata_json: '{{ role_nutanix_pe_upload_pc_available_pc_versions.json | json_query(query) | join("") }}'
   vars:
-    query: "entities[?name==`{{ nutanix_pc_metadata.version_id }}`]"
+    query: "entities[?name==`{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}`]"
 
-- name: Debug nutanix_pc_upload_version_data
+- name: Debug role_nutanix_pe_upload_pc_exists_metadata_json
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_upload_version_data }}"
-  when: nutanix_debug
+    msg: "{{ role_nutanix_pe_upload_pc_exists_metadata_json }}"
+  when: role_nutanix_pe_upload_pc_debug
 
-- name: Check Prism Central version is already present
+- name: Prism Central version is already present
   ansible.builtin.debug:
-    msg: "The Prism Central version {{ nutanix_pc_metadata.version_id }} is already available."
-  when: nutanix_pc_upload_version_data
+    msg: "The Prism Central version {{ role_nutanix_pe_upload_pc_metadata_json.version_id }} is already available."
+  when: role_nutanix_pe_upload_pc_exists_metadata_json
 
 - name: Check local Prism Central image
   ansible.builtin.stat:
-    path: "{{ nutanix_pc_binary_path }}"
+    path: "{{ role_nutanix_pe_upload_pc_binary_path }}"
     checksum_algorithm: "sha256"
-  register: nutanix_pc_binary_file
+  register: role_nutanix_pe_upload_pc_binary_stat
 
-- name: Debug nutanix_pc_binary_file
+- name: Debug role_nutanix_pe_upload_pc_binary_stat
   ansible.builtin.debug:
-    msg: "{{ nutanix_pc_binary_file }}"
-  when: nutanix_debug
+    msg: "{{ role_nutanix_pe_upload_pc_binary_stat }}"
+  when: role_nutanix_pe_upload_pc_debug
 
 - name: Prism Central binary file checksum error
   ansible.builtin.debug:
     msg:
-      "The provided file '{{ nutanix_pc_binary_file.stat.path | default('') }}' checksum 'sha256:{{ nutanix_pc_binary_file.stat.checksum | default('') }}' \
-      does not match the expected checksum 'sha256:{{ nutanix_pc_metadata.sha256 }}'. Attempting to download a \
-      new copy from '{{ nutanix_pc_metadata.download_url_cdn }}'."
-  when: nutanix_pc_binary_file.stat.checksum | default('') != nutanix_pc_metadata.sha256
+      "The provided file '{{ role_nutanix_pe_upload_pc_binary_stat.stat.path | default('') }}' checksum 'sha256:\
+      {{ role_nutanix_pe_upload_pc_binary_stat.stat.checksum | default('') }}' does not match the expected checksum \
+      'sha256:{{ role_nutanix_pe_upload_pc_metadata_json.sha256 }}'. Attempting to download a \
+      new copy from '{{ role_nutanix_pe_upload_pc_metadata_json.download_url_cdn }}'."
+  when: role_nutanix_pe_upload_pc_binary_stat.stat.checksum | default('') != role_nutanix_pe_upload_pc_metadata_json.sha256
 
 - name: Download Prism Central release binary if it doesn't exist or if the checksum is not valid
+  when:
+    - not role_nutanix_pe_upload_pc_exists_metadata_json
+    - not role_nutanix_pe_upload_pc_binary_stat.stat.exists
   block:
     - name: Create temporary image directory
       ansible.builtin.tempfile:
         state: directory
         suffix: "_nutanix_pc_download"
-      register: nutanix_pc_binary_file_temp_dir_create
-      when:
-        - not nutanix_pc_binary_file.stat.exists or nutanix_pc_binary_file.stat.checksum != nutanix_pc_metadata.sha256
+      register: role_nutanix_pe_upload_pc_temp_dir
+      when: >
+        ( not role_nutanix_pe_upload_pc_binary_stat.stat.exists or
+        role_nutanix_pe_upload_pc_binary_stat.stat.checksum != role_nutanix_pe_upload_pc_metadata_json.sha256 )
 
-    - name: Debug nutanix_pc_binary_file_temp_dir_create
+    - name: Debug role_nutanix_pe_upload_pc_temp_dir
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_binary_file_temp_dir_create }}"
+        msg: "{{ role_nutanix_pe_upload_pc_temp_dir }}"
       when:
-        - nutanix_debug
-        - nutanix_pc_binary_file_temp_dir_create.changed
+        - role_nutanix_pe_upload_pc_debug
+        - role_nutanix_pe_upload_pc_temp_dir.changed
 
     - name: Download Prism Central image
       ansible.builtin.get_url:
-        url: "{{ nutanix_pc_metadata.download_url_cdn }}"
-        dest: "{{ nutanix_pc_binary_file_temp_dir_create.path }}/{{ nutanix_pc_metadata.version_id }}.tar"
+        url: "{{ role_nutanix_pe_upload_pc_metadata_json.download_url_cdn }}"
+        dest: "{{ role_nutanix_pe_upload_pc_temp_dir.path }}/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}.tar"
         mode: "0440"
-        checksum: "sha256:{{ nutanix_pc_metadata.sha256 }}"
-      register: nutanix_pc_binary_file_downloaded
-      when:
-        - not nutanix_pc_upload_version_data
-        - not nutanix_pc_binary_file.stat.exists or nutanix_pc_binary_file.stat.checksum != nutanix_pc_metadata.sha256
-        - nutanix_pc_binary_file_temp_dir_create.changed
+        checksum: "sha256:{{ role_nutanix_pe_upload_pc_metadata_json.sha256 }}"
+      register: role_nutanix_pe_upload_pc_download
+      async: "{{ role_nutanix_pe_upload_pc_timeout_sec }}"
+      poll: 0
+      changed_when: false
+      when: >
+        ( not role_nutanix_pe_upload_pc_binary_stat.stat.exists or
+        role_nutanix_pe_upload_pc_binary_stat.stat.checksum != role_nutanix_pe_upload_pc_metadata_json.sha256 ) and
+        role_nutanix_pe_upload_pc_temp_dir.changed
 
-    - name: Debug nutanix_pc_binary_file_downloaded
+    - name: Wait for Prism Central image download completion
+      ansible.builtin.async_status:
+        jid: "{{ role_nutanix_pe_upload_pc_download.ansible_job_id }}"
+      register: role_nutanix_pe_upload_pc_download_result
+      until: role_nutanix_pe_upload_pc_download_result.finished
+      retries: "{{ (role_nutanix_pe_upload_pc_timeout_sec | int / 60) | int }}"
+      delay: 60
+      changed_when: role_nutanix_pe_upload_pc_download_result.finished
+      when: role_nutanix_pe_upload_pc_download is defined
+
+    - name: Debug role_nutanix_pe_upload_pc_download_result
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_binary_file_downloaded }}"
+        msg: "{{ role_nutanix_pe_upload_pc_download_result }}"
       when:
-        - nutanix_debug
-        - nutanix_pc_binary_file_downloaded.changed
+        - role_nutanix_pe_upload_pc_debug
+        - role_nutanix_pe_upload_pc_download_result.finished
 
     - name: Set image path to reflect download
       ansible.builtin.set_fact:
-        nutanix_pc_binary_path: "{{ nutanix_pc_binary_file_downloaded.dest }}"
+        role_nutanix_pe_upload_pc_binary_path: "{{ role_nutanix_pe_upload_pc_download_result.dest }}"
       when:
-        - not nutanix_pc_upload_version_data
-        - nutanix_pc_binary_file_downloaded.changed
+        - not role_nutanix_pe_upload_pc_download_result.failed
 
-    - name: Debug nutanix_pc_binary_path
+    - name: Debug role_nutanix_pe_upload_pc_binary_path
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_binary_path }}"
+        msg: "{{ role_nutanix_pe_upload_pc_binary_path }}"
       when:
-        - nutanix_debug
-        - not nutanix_pc_upload_version_data
-        - nutanix_pc_binary_file_downloaded.changed
+        - role_nutanix_pe_upload_pc_debug
+        - not role_nutanix_pe_upload_pc_download_result.failed
 
   rescue:
     - name: Remove temporary image directory
       ansible.builtin.file:
         state: absent
-        path: "{{ nutanix_pc_binary_file_temp_dir_create.path }}"
-      register: nutanix_pc_binary_file_temp_dir_remove
+        path: "{{ role_nutanix_pe_upload_pc_temp_dir.path }}"
+      register: role_nutanix_pe_upload_pc_temp_dir_remove
       when:
-        - nutanix_pc_binary_file_temp_dir_create.path is defined
+        - role_nutanix_pe_upload_pc_temp_dir.path is defined
 
-    - name: Debug nutanix_pc_binary_file_temp_dir_remove
+    - name: Debug role_nutanix_pe_upload_pc_temp_dir_remove
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_binary_file_temp_dir_remove }}"
+        msg: "{{ role_nutanix_pe_upload_pc_temp_dir_remove }}"
       when:
-        - nutanix_debug
-        - nutanix_pc_binary_file_temp_dir_remove.changed
+        - role_nutanix_pe_upload_pc_debug
+        - role_nutanix_pe_upload_pc_temp_dir_remove.changed
 
 - name: Upload Prism Central release to cluster
+  when:
+    - not role_nutanix_pe_upload_pc_exists_metadata_json
   block:
     - name: Validate PC Upload Metadata
       ansible.builtin.uri:
-        url: "https://{{ nutanix_host }}:{{ nutanix_port }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares/validate_upload"
+        url:
+          "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/\
+          services/rest/v1/upgrade/prism_central_deploy/softwares/validate_upload"
         method: POST
-        validate_certs: "{{ validate_certs }}"
-        src: "{{ nutanix_pc_metadata_path }}"
+        validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+        src: "{{ role_nutanix_pe_upload_pc_metadata_path }}"
         headers:
-          Authorization: "{{ nutanix_api_auth }}"
+          Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
           content-type: "application/octet-stream"
         status_code: 200
-        timeout: "{{ nutanix_pc_upload_timeout_mins * 60 }}"
+        timeout: "{{ role_nutanix_pe_upload_pc_timeout_mins * 60 }}"
         return_content: true
-      changed_when: nutanix_pc_upload_validate_metadata.status == 200
-      register: nutanix_pc_upload_validate_metadata
+      changed_when: role_nutanix_pe_upload_pc_validate_metadata.status == 200
+      register: role_nutanix_pe_upload_pc_validate_metadata
       ignore_errors: false
       when:
-        - not nutanix_pc_upload_version_data
+        - not role_nutanix_pe_upload_pc_exists_metadata_json
 
-    - name: Debug nutanix_pc_upload_validate_metadata
+    - name: Debug role_nutanix_pe_upload_pc_validate_metadata
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_upload_validate_metadata }}"
+        msg: "{{ role_nutanix_pe_upload_pc_validate_metadata }}"
       when:
-        - nutanix_debug
-        - nutanix_pc_upload_validate_metadata.changed | default(false)
+        - role_nutanix_pe_upload_pc_debug
+        - role_nutanix_pe_upload_pc_validate_metadata.changed | default(false)
 
-    - name: Debug nutanix_pc_upload_validate_metadata.set_cookie
+    - name: Debug role_nutanix_pe_upload_pc_validate_metadata.set_cookie
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_upload_validate_metadata.set_cookie }}"
+        msg: "{{ role_nutanix_pe_upload_pc_validate_metadata.set_cookie }}"
       when:
-        - nutanix_debug
-        - nutanix_pc_upload_validate_metadata.changed
+        - role_nutanix_pe_upload_pc_debug
+        - role_nutanix_pe_upload_pc_validate_metadata.changed
 
-    - name: Upload PC binary file
+    - name: Upload Prism Central image to Prism Element
       ansible.builtin.uri:
         url:
-          "https://{{ nutanix_host }}:{{ nutanix_port }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares/\
-          {{ nutanix_pc_metadata.version_id }}/upload?fileSize={{ nutanix_pc_metadata.size }}&md5Sum={{ nutanix_pc_metadata.hex_md5 }}&\
-          fileName={{ nutanix_pc_metadata.version_id }}&version={{ nutanix_pc_metadata.version_id }}"
+          "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/\
+          softwares/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}/upload?\
+          fileSize={{ role_nutanix_pe_upload_pc_metadata_json.size }}&\
+          md5Sum={{ role_nutanix_pe_upload_pc_metadata_json.hex_md5 }}&\
+          fileName={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}&\
+          version={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}"
         method: POST
-        validate_certs: "{{ validate_certs }}"
-        src: "{{ nutanix_pc_binary_path }}"
+        validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+        src: "{{ role_nutanix_pe_upload_pc_binary_path }}"
+        headers:
+          Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
+          content-type: "application/octet-stream"
+          Cookie: "{{ role_nutanix_pe_upload_pc_validate_metadata.set_cookie }}"
+        status_code: 200
+        timeout: "{{ role_nutanix_pe_upload_pc_timeout_mins * 60 }}"
+        return_content: true
+      register: role_nutanix_pe_upload_pc_image
+      async: "{{ role_nutanix_pe_upload_pc_timeout_sec }}"
+      poll: 0
+      changed_when: false
+      when:
+        - not role_nutanix_pe_upload_pc_exists_metadata_json
+        - role_nutanix_pe_upload_pc_validate_metadata.changed
+
+    - name: Wait for Prism Central image upload completion
+      ansible.builtin.async_status:
+        jid: "{{ role_nutanix_pe_upload_pc_image.ansible_job_id }}"
+      register: role_nutanix_pe_upload_pc_image_result
+      until: role_nutanix_pe_upload_pc_image_result.finished
+      retries: "{{ (role_nutanix_pe_upload_pc_timeout_sec | int / 60) | int }}"
+      delay: 60
+      changed_when: role_nutanix_pe_upload_pc_image_result.status == 200
+      failed_when: role_nutanix_pe_upload_pc_image_result.elapsed == 0
+
+    - name: Debug role_nutanix_pe_upload_pc_image_result
+      ansible.builtin.debug:
+        msg: "{{ role_nutanix_pe_upload_pc_image_result }}"
+      when:
+        - role_nutanix_pe_upload_pc_debug
+        - role_nutanix_pe_upload_pc_image_result.finished
+
+  rescue:
+    - name: Remove Prism Central image from Prism Element
+      ansible.builtin.uri:
+        url:
+          "https://{{ role_nutanix_pe_upload_pc_host }}:{{ role_nutanix_pe_upload_pc_port }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/\
+          softwares/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}/"
+        method: DELETE
+        validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
         headers:
           Authorization: "{{ nutanix_api_auth }}"
-          content-type: "application/octet-stream"
-          Cookie: "{{ nutanix_pc_upload_validate_metadata.set_cookie }}"
+          content-type: "application/json"
+          Cookie: "{{ role_nutanix_pe_upload_pc_validate_metadata.set_cookie }}"
         status_code: 200
-        timeout: "{{ nutanix_pc_upload_timeout_mins * 60 }}"
+        timeout: "{{ role_nutanix_pe_upload_pc_timeout_mins * 60 }}"
         return_content: true
       changed_when: nutanix_pc_upload_release.status == 200
-      register: nutanix_pc_upload_release
-      ignore_errors: false
-      when:
-        - not nutanix_pc_upload_version_data
-        - nutanix_pc_upload_validate_metadata.changed
+      register: role_nutanix_pe_upload_pc_image_delete
 
-    - name: Debug nutanix_pc_upload_release
+    - name: Debug role_nutanix_pe_upload_pc_image_delete
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_upload_release }}"
+        msg: "{{ role_nutanix_pe_upload_pc_image_delete }}"
       when:
-        - nutanix_debug
-        - nutanix_pc_upload_release.changed
+        - role_nutanix_pe_upload_pc_debug
 
   always:
     - name: Remove temporary image directory
       ansible.builtin.file:
         state: absent
-        path: "{{ nutanix_pc_binary_file_temp_dir_create.path }}"
-      register: nutanix_pc_binary_file_temp_dir_remove
+        path: "{{ role_nutanix_pe_upload_pc_temp_dir.path }}"
+      register: role_nutanix_pe_upload_pc_temp_dir_remove
       when:
-        - nutanix_pc_binary_file_temp_dir_create.path is defined
+        - role_nutanix_pe_upload_pc_temp_dir.path is defined
 
-    - name: Debug nutanix_pc_binary_file_temp_dir_remove
+    - name: Debug role_nutanix_pe_upload_pc_temp_dir_remove
       ansible.builtin.debug:
-        msg: "{{ nutanix_pc_binary_file_temp_dir_remove }}"
+        msg: "{{ role_nutanix_pe_upload_pc_temp_dir_remove }}"
       when:
-        - nutanix_debug
-        - nutanix_pc_binary_file_temp_dir_remove.changed
+        - role_nutanix_pe_upload_pc_debug
+        - role_nutanix_pe_upload_pc_temp_dir_remove.changed

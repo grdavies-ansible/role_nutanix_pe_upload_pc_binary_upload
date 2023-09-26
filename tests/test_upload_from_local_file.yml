@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  gather_facts: false
+  roles:
+    - role: ../..
+  vars:
+    role_nutanix_pe_upload_pc_host: 10.38.11.199
+    role_nutanix_pe_upload_pc_username: admin
+    role_nutanix_pe_upload_pc_password: nx2Tech682!
+    # role_nutanix_pe_upload_pc_debug: true
+    role_nutanix_pe_upload_pc_metadata_path:
+      "/Users/ross.davies/Documents/GitHub/grdavies-ansible/role_nutanix_pe_upload_pc_binary_upload\
+      /tests/files/generated-pc.2023.3-metadata.json"
+    role_nutanix_pe_upload_pc_binary_path:
+      "/Users/ross.davies/Documents/GitHub/grdavies-ansible/role_nutanix_pe_upload_pc_binary_upload/\
+      tests/files/pc.2023.3.tar"
