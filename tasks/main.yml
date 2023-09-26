@@ -76,8 +76,9 @@
 - name: Prism Central binary file checksum error
   ansible.builtin.debug:
     msg:
-      "The provided file '{{ nutanix_pc_binary_file.stat.path | default('') }}' checksum 'sha256:{{ nutanix_pc_binary_file.stat.checksum | default('') }}' does not match \
-      the expected checksum 'sha256:{{ nutanix_pc_metadata.sha256 }}'. Attempting to download a new copy from '{{ nutanix_pc_metadata.download_url_cdn }}'."
+      "The provided file '{{ nutanix_pc_binary_file.stat.path | default('') }}' checksum 'sha256:{{ nutanix_pc_binary_file.stat.checksum | default('') }}' \
+      does not match the expected checksum 'sha256:{{ nutanix_pc_metadata.sha256 }}'. Attempting to download a \
+      new copy from '{{ nutanix_pc_metadata.download_url_cdn }}'."
   when: nutanix_pc_binary_file.stat.checksum | default('') != nutanix_pc_metadata.sha256
 
 - name: Download Prism Central release binary if it doesn't exist or if the checksum is not valid
