@@ -8,6 +8,16 @@
     msg: "{{ nutanix_pc_upload_timeout_mins * 60 }}"
   when: nutanix_debug
 
+- name: Debug nutanix_pc_metadata_path
+  ansible.builtin.debug:
+    msg: "{{ nutanix_pc_metadata_path }}"
+  when: nutanix_debug
+
+- name: Debug nutanix_pc_binary_path
+  ansible.builtin.debug:
+    msg: "{{ nutanix_pc_binary_path }}"
+  when: nutanix_debug
+
 - name: Read PC metadata
   ansible.builtin.include_vars:
     file: "{{ nutanix_pc_metadata_path }}"
