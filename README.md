@@ -28,7 +28,7 @@ None
 - hosts: localhost
   gather_facts: false
   roles:
-    - role: grdavies.role_nutanix_pe_upload_pc_binary_upload
+    - role: grdavies.role_nutanix_pe_upload_pc_binary
   vars:
     nutanix_host: 10.38.185.37
     nutanix_username: admin
@@ -45,7 +45,7 @@ This example only provides the Prism Central release metadata file. The Prism Ce
 - hosts: localhost
   gather_facts: false
   roles:
-    - role: grdavies.role_nutanix_pe_upload_pc_binary_upload
+    - role: grdavies.role_nutanix_pe_upload_pc_binary
   vars:
     nutanix_host: 10.38.185.37
     nutanix_username: admin
