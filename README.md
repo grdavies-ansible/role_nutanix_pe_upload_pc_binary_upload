@@ -8,15 +8,15 @@ The following roles need to be installed as they are used within this role;
 
 ## Input Variables
 
-| Variable                                  | Required | Default         | Choices                                                                         | Comments                                                                                                                                                                                                                                 |
-|-------------------------------------------|----------|-----------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| role_nutanix_pe_upload_pc_host            | yes      |                 |                                                                                 | The IP address or FQDN for the Prism (Element only) to which you want to connect.                                                                                                                                                        |
-| role_nutanix_pe_upload_pc_username        | yes      |                 |                                                                                 | A valid username with appropriate rights to access the Nutanix API.                                                                                                                                                                      |
-| role_nutanix_pe_upload_pc_password        | yes      |                 |                                                                                 | A valid password for the supplied username.                                                                                                                                                                                              |
-| role_nutanix_pe_upload_pc_port            | no       | 9440            |                                                                                 | The Prism TCP port.                                                                                                                                                                                                                      |
-| role_nutanix_pe_upload_pc_validate_certs  | no       | false           | true | false                                                                    | Whether to check if Prism UI certificates are valid.                                                                                                                                                                                     |
-| role_nutanix_pe_upload_pc_metadata_path   | yes      |                 |                                                                                 | Local path to a Prism Central metadata file. This file can be sourced form the Nutanix support website in the AOS downloads section.                                                                                                     |
-| role_nutanix_pe_upload_pc_binary_path     | no       |                 |                                                                                 | Local path to a Prism Central tar file. This file can be sourced form the Nutanix support website in the AOS downloads section. If this value is not supplied the release will be downloaded from the internet.                          |
+| Variable                                            | Required | Default         | Choices                                                                         | Comments                                                                                                                                                                                                                                 |
+|-----------------------------------------------------|----------|-----------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| role_nutanix_pe_upload_pc_host                      | yes      |                 |                                                                                 | The IP address or FQDN for the Prism (Element only) to which you want to connect.                                                                                                                                                        |
+| role_nutanix_pe_upload_pc_host_username             | yes      |                 |                                                                                 | A valid username with appropriate rights to access the Nutanix API.                                                                                                                                                                      |
+| role_nutanix_pe_upload_pc_host_password             | yes      |                 |                                                                                 | A valid password for the supplied username.                                                                                                                                                                                              |
+| role_nutanix_pe_upload_pc_host_port                 | no       | 9440            |                                                                                 | The Prism TCP port.                                                                                                                                                                                                                      |
+| role_nutanix_pe_upload_pc_host_validate_certs       | no       | false           | true | false                                                                    | Whether to check if Prism UI certificates are valid.                                                                                                                                                                                     |
+| role_nutanix_pe_upload_pc_metadata_path             | yes      |                 |                                                                                 | Local path to a Prism Central metadata file. This file can be sourced form the Nutanix support website in the AOS downloads section.                                                                                                     |
+| role_nutanix_pe_upload_pc_binary_path               | no       |                 |                                                                                 | Local path to a Prism Central tar file. This file can be sourced form the Nutanix support website in the AOS downloads section. If this value is not supplied the release will be downloaded from the internet.                          |
 
 ## Output Variables
 
@@ -35,8 +35,8 @@ None
     - role: grdavies.role_nutanix_pe_upload_pc
   vars:
     role_nutanix_pe_upload_pc_host: 10.38.185.37
-    role_nutanix_pe_upload_pc_username: admin
-    role_nutanix_pe_upload_pc_password: nx2Tech165!
+    role_nutanix_pe_upload_pc_host_username: admin
+    role_nutanix_pe_upload_pc_host_password: nx2Tech165!
     role_nutanix_pe_upload_pc_metadata_path: /tmp/generated-pc.2023.3-metadata.json
     role_nutanix_pe_upload_pc_binary_path: /tmp/pc.2023.3.tar
 ```
@@ -52,8 +52,8 @@ This example only provides the Prism Central release metadata file. The Prism Ce
     - role: grdavies.role_nutanix_pe_upload_pc
   vars:
     role_nutanix_pe_upload_pc_host: 10.38.185.37
-    role_nutanix_pe_upload_pc_username: admin
-    role_nutanix_pe_upload_pc_password: nx2Tech165!
+    role_nutanix_pe_upload_pc_host_username: admin
+    role_nutanix_pe_upload_pc_host_password: nx2Tech165!
     role_nutanix_pe_upload_pc_metadata_path: /tmp/generated-pc.2023.3-metadata.json
 ```
 

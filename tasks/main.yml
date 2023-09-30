@@ -5,10 +5,10 @@
     name: grdavies.role_nutanix_prism_api
   vars:
     role_nutanix_prism_api_host: "{{ role_nutanix_pe_upload_pc_host }}"
-    role_nutanix_prism_api_username: "{{ role_nutanix_pe_upload_pc_username }}"
-    role_nutanix_prism_api_password: "{{ role_nutanix_pe_upload_pc_password }}"
-    role_nutanix_prism_api_port: "{{ role_nutanix_pe_upload_pc_port }}"
-    role_nutanix_prism_api_validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+    role_nutanix_prism_api_host_username: "{{ role_nutanix_pe_upload_pc_host_username }}"
+    role_nutanix_prism_api_host_password: "{{ role_nutanix_pe_upload_pc_host_password }}"
+    role_nutanix_prism_api_host_port: "{{ role_nutanix_pe_upload_pc_host_port }}"
+    role_nutanix_prism_api_host_validate_certs: "{{ role_nutanix_pe_upload_pc_host_validate_certs }}"
     role_nutanix_prism_api_debug: "{{ role_nutanix_pe_upload_pc_debug }}"
 
 - name: Set role_nutanix_pe_upload_pc_timeout_sec
@@ -44,7 +44,7 @@
   ansible.builtin.uri:
     url: "https://{{ role_nutanix_prism_api_url_base }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares"
     method: GET
-    validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+    validate_certs: "{{ role_nutanix_pe_upload_pc_host_validate_certs }}"
     body_format: json
     headers:
       Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
@@ -184,7 +184,7 @@
       ansible.builtin.uri:
         url: "https://{{ role_nutanix_prism_api_url_base }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy/softwares/validate_upload"
         method: POST
-        validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+        validate_certs: "{{ role_nutanix_pe_upload_pc_host_validate_certs }}"
         src: "{{ role_nutanix_pe_upload_pc_metadata_path }}"
         headers:
           Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
@@ -222,7 +222,7 @@
           &fileName={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}\
           &version={{ role_nutanix_pe_upload_pc_metadata_json.version_id }}"
         method: POST
-        validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+        validate_certs: "{{ role_nutanix_pe_upload_pc_host_validate_certs }}"
         src: "{{ role_nutanix_pe_upload_pc_binary_path }}"
         headers:
           Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
@@ -263,7 +263,7 @@
           "https://{{ role_nutanix_prism_api_url_base }}/PrismGateway/services/rest/v1/upgrade/prism_central_deploy\
           /softwares/{{ role_nutanix_pe_upload_pc_metadata_json.version_id }}/"
         method: DELETE
-        validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
+        validate_certs: "{{ role_nutanix_pe_upload_pc_host_validate_certs }}"
         headers:
           Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
           content-type: "application/json"
