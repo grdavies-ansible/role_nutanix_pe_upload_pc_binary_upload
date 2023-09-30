@@ -265,7 +265,7 @@
         method: DELETE
         validate_certs: "{{ role_nutanix_pe_upload_pc_validate_certs }}"
         headers:
-          Authorization: "{{ nutanix_api_auth }}"
+          Authorization: "{{ role_nutanix_prism_api_auth_string_b64 }}"
           content-type: "application/json"
           Cookie: "{{ role_nutanix_pe_upload_pc_validate_metadata.set_cookie }}"
         status_code: 200
