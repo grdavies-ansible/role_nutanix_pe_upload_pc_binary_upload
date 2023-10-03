@@ -1,4 +1,4 @@
 ---
 - name: grdavies.role_nutanix_prism_api
   src: https://github.com/grdavies-ansible/role_nutanix_prism_api
-  version: "1.2.1"
+  version: "1.2.2"
